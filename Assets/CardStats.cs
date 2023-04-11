@@ -18,5 +18,6 @@ public class CardStats : ScriptableObject
     public int numActions;
     public int numCards;
     public int numMoney;
-
+    public int numVictoryPoints;
+    public int moneyValue;
 }

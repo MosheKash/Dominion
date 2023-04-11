@@ -9,14 +9,38 @@ using UnityEngine.UI;
 public class Card : MonoBehaviour
 {
     public CardStats stats;
+
+    /* Action Cards */
     public Image cardMainImage;
     public TextMeshProUGUI cardUnboldedText;
     public TextMeshProUGUI cardBoldedText;
     public TextMeshProUGUI cardCostText;
     public TextMeshProUGUI cardTitle;
     public TextMeshProUGUI cardType;
+
+    /* Other Cards */
+    public Image largeMainImage;
+
     CardBehavior behavior;
     public Sprite nullTexture;
+
+    public GameObject universalCardDetails;
+    public GameObject actionCardDetails; // isFlipped = false
+    public GameObject otherCardDetails;
+    public GameObject cardBack; // isFlipped = true
+
+    public bool isFlipped = false; //true means the dominion side is up, false means the card details are up
+
+    public Color victoryCardColor;
+    public Color defaultCardColor;
+    public Color treasureCardColor;
+
+    public Sprite cardDescSprite;
+    public Sprite cardNoDescSprite;
+
+    public Player player;
+
+    public bool cycleCards;
 
     private void Awake()
     {
@@ -34,21 +58,29 @@ public class Card : MonoBehaviour
             cardType.text = "NULL";
             cardMainImage.sprite = nullTexture;
         }
-        //StartCoroutine(CycleCards());
+        
     }
 
     IEnumerator CycleCards()
     {
         while (true)
         {
-            for(int i = 0; i < GameManager.Instance.cardRegistry.Count; i++)
+            for(int i = 0; i < GameManager.Instance.actionCardRegistry.Count; i++)
             {
-                stats = GameManager.Instance.cardRegistry[i];
+                stats = GameManager.Instance.actionCardRegistry[i];
                 InitializeCard();
-                if (!cardUnboldedText.text.Equals(""))
-                {
-                    Debug.Log("Line Count: " + cardUnboldedText.textInfo.lineCount + ", Text is: " + cardUnboldedText.text);
-                }
+                yield return new WaitForSeconds(0.5f);
+            }
+            for (int i = 0; i < GameManager.Instance.victoryCardRegistry.Count; i++)
+            {
+                stats = GameManager.Instance.victoryCardRegistry[i];
+                InitializeCard();
+                yield return new WaitForSeconds(0.5f);
+            }
+            for (int i = 0; i < GameManager.Instance.treasureCardRegistry.Count; i++)
+            {
+                stats = GameManager.Instance.treasureCardRegistry[i];
+                InitializeCard();
                 yield return new WaitForSeconds(0.5f);
             }
         }
@@ -60,66 +92,129 @@ public class Card : MonoBehaviour
         {
             InitializeCard();
         }
+        if (cycleCards)
+        {
+            StartCoroutine(CycleCards());
+        }
+    }
+
+    public void FlipCard()
+    {
+        isFlipped = !isFlipped;
+
+        if (isFlipped)
+        {
+            cardBack.SetActive(true);
+            universalCardDetails.SetActive(false);
+            if(stats.thisType == CardStats.type.ACTION) {
+                actionCardDetails.SetActive(false);
+            }
+            else
+            {
+                otherCardDetails.SetActive(false);
+            }
+            
+        }
+        else
+        {
+            cardBack.SetActive(false);
+            universalCardDetails.SetActive(true);
+            if (stats.thisType == CardStats.type.ACTION)
+            {
+                actionCardDetails.SetActive(true);
+            }
+            else
+            {
+                otherCardDetails.SetActive(true);
+            }
+        }
     }
 
     public void InitializeCard()
     {
-        string bolded = "";
-        if(stats.numActions > 0)
+        foreach(Canvas canvas in GetComponentsInChildren<Canvas>())
         {
-            if(!bolded.Equals(""))
-            {
-                bolded += "\n";
-            }
-            bolded += "+" + stats.numActions + " Action";
-            if (stats.numActions > 1)
-            {
-                bolded += "s";
-            }
+            canvas.worldCamera = GameManager.Instance.mainCamera;
         }
-        if (stats.numBuys > 0)
+        universalCardDetails.SetActive(true);
+        actionCardDetails.SetActive(false);
+        otherCardDetails.SetActive(false);
+        if (stats.thisType == CardStats.type.ACTION)
         {
-            if (!bolded.Equals(""))
+            actionCardDetails.SetActive(true);
+            SpriteRenderer rend = GetComponent<SpriteRenderer>();
+            rend.sprite = cardDescSprite;
+            rend.color = defaultCardColor;
+            rend.UpdateGIMaterials();
+            string bolded = "";
+            if (stats.numActions > 0)
             {
-                bolded += "\n";
+                if (!bolded.Equals(""))
+                {
+                    bolded += "\n";
+                }
+                bolded += "+" + stats.numActions + " Action";
+                if (stats.numActions > 1)
+                {
+                    bolded += "s";
+                }
             }
-            bolded += "+" + stats.numBuys + " Buy";
-            if (stats.numBuys > 1)
+            if (stats.numBuys > 0)
             {
-                bolded += "s";
+                if (!bolded.Equals(""))
+                {
+                    bolded += "\n";
+                }
+                bolded += "+" + stats.numBuys + " Buy";
+                if (stats.numBuys > 1)
+                {
+                    bolded += "s";
+                }
             }
+            if (stats.numCards > 0)
+            {
+                if (!bolded.Equals(""))
+                {
+                    bolded += "\n";
+                }
+                bolded += "+" + stats.numCards + " Card";
+                if (stats.numCards > 1)
+                {
+                    bolded += "s";
+                }
+            }
+            if (stats.numMoney > 0)
+            {
+                if (!bolded.Equals(""))
+                {
+                    bolded += "\n";
+                }
+                bolded += "+<sprite=" + (stats.numMoney - 1) + ">";
+            }
+            cardBoldedText.text = bolded;
+
         }
-        if (stats.numCards > 0)
+        else
         {
-            if (!bolded.Equals(""))
+            otherCardDetails.SetActive(true);
+            SpriteRenderer rend = GetComponent<SpriteRenderer>();
+            rend.sprite = cardNoDescSprite;
+            rend.UpdateGIMaterials();
+            if (stats.thisType == CardStats.type.VICTORY)
             {
-                bolded += "\n";
+                rend.color = victoryCardColor;
             }
-            bolded += "+" + stats.numCards + " Card";
-            if (stats.numCards > 1)
+            else
             {
-                bolded += "s";
+                rend.color = treasureCardColor;
             }
+            largeMainImage.sprite = stats.cardBackground;
         }
-        if (stats.numMoney > 0)
-        {
-            if (!bolded.Equals(""))
-            {
-                bolded += "\n";
-            }
-            bolded += "+<sprite=" + (stats.numMoney - 1)+">";
-                /*"+" + stats.numMoney + " Money";
-            if (stats.numMoney > 1)
-            {
-                bolded += "s";
-            }*/
-        }
-        cardBoldedText.text = bolded;
         cardTitle.text = stats.cardName.ToUpper();
         cardCostText.text = stats.cost.ToString();
         cardMainImage.sprite = stats.cardBackground;
         cardType.text = stats.thisType.ToString();
-        if(stats.thisSecondaryType.ToString() != "NONE")
+        if (stats.thisSecondaryType.ToString() != "NONE")
         {
             cardType.text += " - " + stats.thisSecondaryType.ToString();
         }
@@ -139,12 +234,12 @@ public class Card : MonoBehaviour
     {
         if (cardBoldedText.text.Equals(""))
         {
-            cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -3.5f, cardUnboldedText.transform.position.z);
+            cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -4.5f, cardUnboldedText.transform.position.z);
             cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Middle;
         }
         else if (cardUnboldedText.text.Equals(""))
         {
-            cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -3.5f, cardBoldedText.transform.position.z);
+            cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -4.5f, cardBoldedText.transform.position.z);
             cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Middle;
         }
         else
@@ -159,30 +254,30 @@ public class Card : MonoBehaviour
             }
             else if(amountOfSpaces == 0)
             {
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, 1-((float)(cardBoldedText.textInfo.lineCount+0.5)), cardBoldedText.transform.position.z);
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, 1-(((float)(cardBoldedText.textInfo.lineCount + 0.5))+1), cardUnboldedText.transform.position.z);
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -((float)(cardBoldedText.textInfo.lineCount+0.5)), cardBoldedText.transform.position.z);
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -(((float)(cardBoldedText.textInfo.lineCount + 0.5))+1), cardUnboldedText.transform.position.z);
             }
             else if(amountOfSpaces == 1)
             {
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, 1 - ((float)(cardBoldedText.textInfo.lineCount + 0.5)), cardBoldedText.transform.position.z);
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -(((float)(cardBoldedText.textInfo.lineCount + 0.5)) + 1), cardUnboldedText.transform.position.z);
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x,  - ((float)(cardBoldedText.textInfo.lineCount + 0.5)), cardBoldedText.transform.position.z);
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -1 -(((float)(cardBoldedText.textInfo.lineCount + 0.5)) + 1), cardUnboldedText.transform.position.z);
             }
             else if(amountOfSpaces%2 == 0)
             {
                 amountOfSpaces--;
                 int bottomSpace = amountOfSpaces / 2 + 1;
                 int topSpace = amountOfSpaces / 2;
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -0.5f-topSpace, cardBoldedText.transform.position.z);
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -1.5f-topSpace, cardBoldedText.transform.position.z);
                 cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Top;
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -6.5f+bottomSpace, cardUnboldedText.transform.position.z);
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -7.5f+bottomSpace, cardUnboldedText.transform.position.z);
                 cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
             }
             else if (amountOfSpaces % 2 == 1)
             {
                 int space = amountOfSpaces / 2;
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -0.5f-space, cardBoldedText.transform.position.z);
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -1.5f-space, cardBoldedText.transform.position.z);
                 cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Top;
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -6.5f+space, cardUnboldedText.transform.position.z);
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -7.5f+space, cardUnboldedText.transform.position.z);
                 cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
             }
         }
