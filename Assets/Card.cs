@@ -17,7 +17,6 @@ public class Card : MonoBehaviour
     public TextMeshProUGUI cardType;
     CardBehavior behavior;
     public Sprite nullTexture;
-    public List<CardStats> cardList;
 
     private void Awake()
     {
@@ -35,20 +34,21 @@ public class Card : MonoBehaviour
             cardType.text = "NULL";
             cardMainImage.sprite = nullTexture;
         }
-
-
-        GatherData();
-        StartCoroutine(CycleCards());
+        //StartCoroutine(CycleCards());
     }
 
     IEnumerator CycleCards()
     {
         while (true)
         {
-            for(int i = 0; i < cardList.Count; i++)
+            for(int i = 0; i < GameManager.Instance.cardRegistry.Count; i++)
             {
-                stats = cardList[i];
+                stats = GameManager.Instance.cardRegistry[i];
                 InitializeCard();
+                if (!cardUnboldedText.text.Equals(""))
+                {
+                    Debug.Log("Line Count: " + cardUnboldedText.textInfo.lineCount + ", Text is: " + cardUnboldedText.text);
+                }
                 yield return new WaitForSeconds(0.5f);
             }
         }
@@ -59,16 +59,6 @@ public class Card : MonoBehaviour
         if (stats != null)
         {
             InitializeCard();
-        }
-    }
-
-    void GatherData()
-    {
-        List<Object> obj = Resources.LoadAll("Card Data", typeof(CardStats)).ToList();
-        Debug.Log(obj.Count);
-        for(int i = 0; i < obj.Count; i++)
-        {
-            cardList.Add((CardStats)obj[i]);
         }
     }
 
@@ -141,5 +131,60 @@ public class Card : MonoBehaviour
         {
             cardUnboldedText.text = stats.cardText;
         }
+        cardUnboldedText.ForceMeshUpdate();
+        cardBoldedText.ForceMeshUpdate();
+        SpaceOutCardText();
     }
+    void SpaceOutCardText()
+    {
+        if (cardBoldedText.text.Equals(""))
+        {
+            cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -3.5f, cardUnboldedText.transform.position.z);
+            cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Middle;
+        }
+        else if (cardUnboldedText.text.Equals(""))
+        {
+            cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -3.5f, cardBoldedText.transform.position.z);
+            cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Middle;
+        }
+        else
+        {
+            int amountOfLines = cardUnboldedText.textInfo.lineCount + cardBoldedText.textInfo.lineCount;
+            int amountOfSpaces = 7 - amountOfLines;
+            cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
+            cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Top;
+            if (amountOfSpaces < 0)
+            {
+                Debug.Log("Something is wrong with the description of Card " + stats.cardName);
+            }
+            else if(amountOfSpaces == 0)
+            {
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, 1-((float)(cardBoldedText.textInfo.lineCount+0.5)), cardBoldedText.transform.position.z);
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, 1-(((float)(cardBoldedText.textInfo.lineCount + 0.5))+1), cardUnboldedText.transform.position.z);
+            }
+            else if(amountOfSpaces == 1)
+            {
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, 1 - ((float)(cardBoldedText.textInfo.lineCount + 0.5)), cardBoldedText.transform.position.z);
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -(((float)(cardBoldedText.textInfo.lineCount + 0.5)) + 1), cardUnboldedText.transform.position.z);
+            }
+            else if(amountOfSpaces%2 == 0)
+            {
+                amountOfSpaces--;
+                int bottomSpace = amountOfSpaces / 2 + 1;
+                int topSpace = amountOfSpaces / 2;
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -0.5f-topSpace, cardBoldedText.transform.position.z);
+                cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Top;
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -6.5f+bottomSpace, cardUnboldedText.transform.position.z);
+                cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
+            }
+            else if (amountOfSpaces % 2 == 1)
+            {
+                int space = amountOfSpaces / 2;
+                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -0.5f-space, cardBoldedText.transform.position.z);
+                cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Top;
+                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -6.5f+space, cardUnboldedText.transform.position.z);
+                cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
+            }
+        }
+    } 
 }
