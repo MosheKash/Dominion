@@ -44,10 +44,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8859ed6a97b2d1b43b26ce956985ff92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: deck
+      Entry: 7
+      Data: 0|System.Collections.Generic.Stack`1[[Card, Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: discard
+      Entry: 7
+      Data: 1|System.Collections.Generic.Stack`1[[Card, Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   numActions: 0
   numBuys: 0
   numMoney: 0
   hand: []
   isActiveTurn: 0
-  copper: {fileID: 11400000, guid: db64e03b242660247be3b5af92d73ae1, type: 2}
-  estate: {fileID: 11400000, guid: e485f91b9cbf400448c9544cd1cde71a, type: 2}
+  copper: {fileID: 11400000, guid: 3d6478ebd6b29c34c994513dec9d747a, type: 2}
+  estate: {fileID: 11400000, guid: a9fce6a97668fe245b1e2e9502bb86cd, type: 2}

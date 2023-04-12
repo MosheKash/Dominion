@@ -8,16 +8,17 @@ public class UniformCardStack : MonoBehaviour
     public int amount;
     public bool isEmpty;
 
-    GameObject cardVisual;
+    Card cardVisual;
     private void Start()
     {
         if (amount == 0)
         {
             Debug.LogWarning($"You have a stack with card type {card.cardName} that has a size of 0...");
         }
-        cardVisual = Instantiate(GameManager.Instance.baseCard, transform);
+        cardVisual = GetComponentInChildren<Card>();
         cardVisual.transform.position = transform.position;
-        cardVisual.GetComponent<Card>().stats = card;
+        cardVisual.stats = card;
+        cardVisual.InitializeCard();
     }
 
     public void RemoveCard(int amountToRemove)

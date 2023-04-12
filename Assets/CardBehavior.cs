@@ -9,36 +9,44 @@ public abstract class CardBehavior : MonoBehaviour
     CardStats stats;
 
     Player player;
-    private void OnEnable()
+
+    public void InitBehaviour()
     {
         card = GetComponent<Card>();
-        player = card.player;
+        player = GameManager.Instance.playerRegistry[0];
+        stats = card.stats;
     }
 
     public abstract void React();
 
     public void Play()
     {
-        /*
-         * Do x amount of buys, actions, blah blah then call the custom function
-         *
-         */
-        if(stats.thisType == CardStats.type.ACTION)
+        if (card.isClickable)
         {
-            player.numActions += stats.numActions;
-            player.numBuys += stats.numBuys;
-            player.DrawCard(stats.numCards);
-            player.numMoney += stats.numMoney;
+            /*
+             * Do x amount of buys, actions, blah blah then call the custom function
+             *
+             */
+            Debug.Log($"!! {stats}, {card}");
+            Debug.Log($"Clicked on {stats.cardName}!");
+            if (stats.thisType == CardStats.type.ACTION)
+            {
+                player.numActions += stats.numActions;
+                player.numBuys += stats.numBuys;
+                player.DrawCard(stats.numCards);
+                player.numMoney += stats.numMoney;
+
+            }
+            else if (stats.thisType == CardStats.type.VICTORY)
+            {
+                // doesnt do anything...
+            }
+            else if (stats.thisType == CardStats.type.TREASURE)
+            {
+                player.numMoney += stats.moneyValue;
+            }
+            CustomAction();
         }
-        else if(stats.thisType == CardStats.type.VICTORY)
-        {
-            // doesnt do anything...
-        }
-        else if(stats.thisType == CardStats.type.TREASURE)
-        {
-            player.numMoney += stats.moneyValue;
-        }
-        CustomAction();
     }
 
     public void UpdateDescription()

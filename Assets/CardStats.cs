@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class CardStats : ScriptableObject
 {
     public int cost;
-    public enum type {VICTORY, ACTION, TREASURE};
+    public enum type {VICTORY, ACTION, TREASURE, CURSE};
     public enum secondaryType {NONE, ATTACK, REACTION };
     public type thisType;
     public secondaryType thisSecondaryType;

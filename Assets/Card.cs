@@ -24,9 +24,9 @@ public class Card : MonoBehaviour
     CardBehavior behavior;
     public Sprite nullTexture;
 
-    public GameObject universalCardDetails;
+    public GameObject universalCardDetails; // isFlipped = false
     public GameObject actionCardDetails; // isFlipped = false
-    public GameObject otherCardDetails;
+    public GameObject otherCardDetails; // isFlipped = false
     public GameObject cardBack; // isFlipped = true
 
     public bool isFlipped = false; //true means the dominion side is up, false means the card details are up
@@ -34,12 +34,12 @@ public class Card : MonoBehaviour
     public Color victoryCardColor;
     public Color defaultCardColor;
     public Color treasureCardColor;
+    public Color curseCardColor;
 
     public Sprite cardDescSprite;
     public Sprite cardNoDescSprite;
 
-    public Player player;
-
+    public bool isClickable = false;
     public bool cycleCards;
 
     private void Awake()
@@ -96,6 +96,7 @@ public class Card : MonoBehaviour
         {
             StartCoroutine(CycleCards());
         }
+        behavior.InitBehaviour();
     }
 
     public void FlipCard()
@@ -128,6 +129,11 @@ public class Card : MonoBehaviour
                 otherCardDetails.SetActive(true);
             }
         }
+    }
+
+    private void OnMouseDown()
+    {
+        behavior.Play();
     }
 
     public void InitializeCard()
@@ -204,6 +210,10 @@ public class Card : MonoBehaviour
             {
                 rend.color = victoryCardColor;
             }
+            else if(stats.thisType == CardStats.type.CURSE)
+            {
+                rend.color = curseCardColor;
+            }
             else
             {
                 rend.color = treasureCardColor;
@@ -234,12 +244,12 @@ public class Card : MonoBehaviour
     {
         if (cardBoldedText.text.Equals(""))
         {
-            cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -4.5f, cardUnboldedText.transform.position.z);
+            cardUnboldedText.transform.localPosition = new Vector3(cardUnboldedText.transform.localPosition.x, -4.5f, cardUnboldedText.transform.localPosition.z);
             cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Middle;
         }
         else if (cardUnboldedText.text.Equals(""))
         {
-            cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -4.5f, cardBoldedText.transform.position.z);
+            cardBoldedText.transform.localPosition = new Vector3(cardBoldedText.transform.localPosition.x, -4.5f, cardBoldedText.transform.localPosition.z);
             cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Middle;
         }
         else
@@ -254,30 +264,30 @@ public class Card : MonoBehaviour
             }
             else if(amountOfSpaces == 0)
             {
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -((float)(cardBoldedText.textInfo.lineCount+0.5)), cardBoldedText.transform.position.z);
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -(((float)(cardBoldedText.textInfo.lineCount + 0.5))+1), cardUnboldedText.transform.position.z);
+                cardBoldedText.transform.localPosition = new Vector3(cardBoldedText.transform.localPosition.x, -((float)(cardBoldedText.textInfo.lineCount+0.5)), cardBoldedText.transform.localPosition.z);
+                cardUnboldedText.transform.localPosition = new Vector3(cardUnboldedText.transform.localPosition.x, -(((float)(cardBoldedText.textInfo.lineCount + 0.5))+1), cardUnboldedText.transform.localPosition.z);
             }
             else if(amountOfSpaces == 1)
             {
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x,  - ((float)(cardBoldedText.textInfo.lineCount + 0.5)), cardBoldedText.transform.position.z);
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -1 -(((float)(cardBoldedText.textInfo.lineCount + 0.5)) + 1), cardUnboldedText.transform.position.z);
+                cardBoldedText.transform.localPosition = new Vector3(cardBoldedText.transform.localPosition.x,  - ((float)(cardBoldedText.textInfo.lineCount + 0.5)), cardBoldedText.transform.localPosition.z);
+                cardUnboldedText.transform.localPosition = new Vector3(cardUnboldedText.transform.localPosition.x, -1 -(((float)(cardBoldedText.textInfo.lineCount + 0.5)) + 1), cardUnboldedText.transform.localPosition.z);
             }
             else if(amountOfSpaces%2 == 0)
             {
                 amountOfSpaces--;
                 int bottomSpace = amountOfSpaces / 2 + 1;
                 int topSpace = amountOfSpaces / 2;
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -1.5f-topSpace, cardBoldedText.transform.position.z);
+                cardBoldedText.transform.localPosition = new Vector3(cardBoldedText.transform.localPosition.x, -1.5f-topSpace, cardBoldedText.transform.localPosition.z);
                 cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Top;
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -7.5f+bottomSpace, cardUnboldedText.transform.position.z);
+                cardUnboldedText.transform.localPosition = new Vector3(cardUnboldedText.transform.localPosition.x, -7.5f+bottomSpace, cardUnboldedText.transform.localPosition.z);
                 cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
             }
             else if (amountOfSpaces % 2 == 1)
             {
                 int space = amountOfSpaces / 2;
-                cardBoldedText.transform.position = new Vector3(cardBoldedText.transform.position.x, -1.5f-space, cardBoldedText.transform.position.z);
+                cardBoldedText.transform.localPosition = new Vector3(cardBoldedText.transform.localPosition.x, -1.5f-space, cardBoldedText.transform.localPosition.z);
                 cardBoldedText.verticalAlignment = VerticalAlignmentOptions.Top;
-                cardUnboldedText.transform.position = new Vector3(cardUnboldedText.transform.position.x, -7.5f+space, cardUnboldedText.transform.position.z);
+                cardUnboldedText.transform.localPosition = new Vector3(cardUnboldedText.transform.localPosition.x, -7.5f+space, cardUnboldedText.transform.localPosition.z);
                 cardUnboldedText.verticalAlignment = VerticalAlignmentOptions.Bottom;
             }
         }

@@ -3,45 +3,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : SerializedMonoBehaviour
+public class Player : MonoBehaviour
 {
     public int numActions;
     public int numBuys;
     public int numMoney;
 
-    public List<Card> hand = new List<Card>();
-    public Stack<Card> deck = new Stack<Card>();
-    public Stack<Card> discard = new Stack<Card>();
+    public List<CardStats> hand = new List<CardStats>();
+    public Stack<CardStats> deck = new Stack<CardStats>();
+    public Stack<CardStats> discard = new Stack<CardStats>();
+
+    public List<Card> handVisual = new List<Card>();
 
     public bool isActiveTurn;
 
     public CardStats copper;
     public CardStats estate;
 
-    GameObject deckObj, handObj, discardObj;
+    public GameObject deckObj, handObj, discardObj;
 
     public void InitializeDeck()
     {
         //add 7 coppers and 3 estates, then shuffle
         for(int i = 0; i < 7; i++)
         {
-            Card card = Instantiate(GameManager.Instance.baseCard.GetComponent<Card>());
-            card.stats = copper;
-            card.InitializeCard();
-            card.transform.parent = deckObj.transform;
-            card.gameObject.name = card.stats.cardName;
-            deck.Push(card);
+            deck.Push(copper);
         }
         for(int i = 0; i < 3; i++)
         {
-            Card card = Instantiate(GameManager.Instance.baseCard.GetComponent<Card>());
-            card.stats = estate;
-            card.InitializeCard();
-            card.transform.parent = deckObj.transform;
-            card.gameObject.name = card.stats.cardName;
-            deck.Push(card);
+            deck.Push(estate);
         }
         deck = GameManager.Instance.ShuffleCardStack(deck);
+        DrawHand();
     }
 
     public void DrawHand()
@@ -62,23 +55,29 @@ public class Player : SerializedMonoBehaviour
     {
         for(int i = 0; i <amountDrawn; i++)
         {
+            if (GameManager.Instance.playerRegistry[0].Equals(this)) {
+                Card card = Instantiate(GameManager.Instance.baseCard).GetComponent<Card>();
+                card.stats = deck.Peek();
+                card.InitializeCard();
+                card.isClickable = true;
+                handVisual.Add(card);
+            }
+
             hand.Add(deck.Peek());
             deck.Pop();
         }
+        if (GameManager.Instance.playerRegistry[0].Equals(this))
+        {
+            RecalculateHandGUI();
+        }
     }
 
-    private void Awake()
+    void RecalculateHandGUI()
     {
-        deckObj = new GameObject("Deck Object");
-        deckObj.transform.parent = transform;
-
-        handObj = new GameObject("Hand Object");
-        handObj.transform.parent = transform;
-
-        discardObj = new GameObject("Discard Object");
-        discardObj.transform.parent = transform;
-        InitializeDeck();
-        DrawHand();
+        for(int i = 0; i < handVisual.Count; i++)
+        {
+            handVisual[i].transform.position = new Vector3(-30 + 15 * i, -20, 50);
+        }
     }
 
     // Start is called before the first frame update

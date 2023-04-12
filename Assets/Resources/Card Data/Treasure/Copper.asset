@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: Copper
   m_EditorClassIdentifier: 
   cost: 0
-  thisType: 0
+  thisType: 2
   thisSecondaryType: 0
-  cardName: 
-  cardBackground: {fileID: 0}
+  cardName: Copper
+  cardBackground: {fileID: 21300000, guid: 425ddf3dc3fbb6f44ab7ea6c94382d2b, type: 3}
   cardText: 
   numBuys: 0
   numActions: 0
   numCards: 0
   numMoney: 0
   numVictoryPoints: 0
+  moneyValue: 1

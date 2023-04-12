@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef7775f9603f9d8408ca802d122af628, type: 3}
   m_Name: Gold
   m_EditorClassIdentifier: 
-  cost: 0
-  thisType: 0
+  cost: 6
+  thisType: 2
   thisSecondaryType: 0
-  cardName: 
-  cardBackground: {fileID: 0}
+  cardName: Gold
+  cardBackground: {fileID: 21300000, guid: 8968a86c993955549ab7219e16c05cb6, type: 3}
   cardText: 
   numBuys: 0
   numActions: 0
   numCards: 0
   numMoney: 0
   numVictoryPoints: 0
+  moneyValue: 3

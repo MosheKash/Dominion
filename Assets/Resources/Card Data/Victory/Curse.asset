@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ef7775f9603f9d8408ca802d122af628, type: 3}
-  m_Name: Silver
+  m_Name: Curse
   m_EditorClassIdentifier: 
-  cost: 3
-  thisType: 2
+  cost: 0
+  thisType: 3
   thisSecondaryType: 0
-  cardName: Silver
-  cardBackground: {fileID: 21300000, guid: d8f6602c15ae703439a5457aa53d5467, type: 3}
+  cardName: Curse
+  cardBackground: {fileID: 21300000, guid: 0b97b6eec9aa3e04eb20498e7a07d776, type: 3}
   cardText: 
   numBuys: 0
   numActions: 0
   numCards: 0
   numMoney: 0
-  numVictoryPoints: 0
-  moneyValue: 2
+  numVictoryPoints: -1
+  moneyValue: 0
