@@ -21,7 +21,7 @@ public class Card : MonoBehaviour
     /* Other Cards */
     public Image largeMainImage;
 
-    CardBehavior behavior;
+    public CardBehavior behavior;
     public Sprite nullTexture;
 
     public GameObject universalCardDetails; // isFlipped = false
@@ -40,6 +40,7 @@ public class Card : MonoBehaviour
     public Sprite cardNoDescSprite;
 
     public bool isClickable = false;
+    public bool isStoreCard = false;
     public bool cycleCards;
 
     private void Awake()

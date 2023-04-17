@@ -9,6 +9,7 @@ public class UniformCardStack : MonoBehaviour
     public bool isEmpty;
 
     Card cardVisual;
+
     private void Start()
     {
         if (amount == 0)
@@ -18,6 +19,8 @@ public class UniformCardStack : MonoBehaviour
         cardVisual = GetComponentInChildren<Card>();
         cardVisual.transform.position = transform.position;
         cardVisual.stats = card;
+        cardVisual.isStoreCard = true;
+        cardVisual.behavior.InitBehaviour();
         cardVisual.InitializeCard();
     }
 
@@ -29,10 +32,10 @@ public class UniformCardStack : MonoBehaviour
             return;
         }
         amount -= amountToRemove;
-        if (amount == 0)
+        if (amount <= 0)
         {
             isEmpty = true;
-            Destroy(cardVisual);
+            Destroy(cardVisual.gameObject);
         }
     }
 }

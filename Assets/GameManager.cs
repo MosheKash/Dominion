@@ -2,9 +2,11 @@ using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class GameManager : SerializedMonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public List<CardStats> actionCardRegistry;
 
@@ -30,7 +32,13 @@ public class GameManager : SerializedMonoBehaviour
 
     public Camera mainCamera;
 
+    public Card discardPile;
+
+    public TextMeshProUGUI tmp;
+
     UniformCardStack provinces = null;
+
+    public Button left, right;
     public static GameManager Instance { get; private set; }
     private void Awake()
     {
@@ -59,6 +67,8 @@ public class GameManager : SerializedMonoBehaviour
             Debug.LogWarning("Unable to find province stack, please investigate...");
         }
         StartGame(2);
+        left.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(-1); });
+        right.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(1); });
     }
     public Stack<CardStats> ShuffleCardStack(Stack<CardStats> input)
     {
@@ -118,6 +128,8 @@ public class GameManager : SerializedMonoBehaviour
 
                 playerRegistry[i].discardObj = new GameObject("Discard Object");
                 playerRegistry[i].discardObj.transform.parent = transform;
+
+                playerRegistry[i].tmp = tmp;
             }
             playerRegistry[i].InitializeDeck();
         }
@@ -125,7 +137,7 @@ public class GameManager : SerializedMonoBehaviour
         {
             if (treasureCardStacks[i].card.cardName.Equals("Copper"))
             {
-                treasureCardStacks[i].amount -= 7 * numPlayers;
+                treasureCardStacks[i].RemoveCard(7 * numPlayers);
             }
         }
         if(numPlayers == 2)
@@ -133,6 +145,13 @@ public class GameManager : SerializedMonoBehaviour
             for(int i = 0; i < victoryCardStacks.Count; i++)
             {
                 victoryCardStacks[i].amount = 8;
+            }
+        }
+        for (int i = 0; i < victoryCardStacks.Count; i++)
+        {
+            if(victoryCardStacks[i].card.thisType == CardStats.type.CURSE)
+            {
+                victoryCardStacks[i].amount = 10 * (numPlayers - 1);
             }
         }
     }
@@ -164,5 +183,48 @@ public class GameManager : SerializedMonoBehaviour
         }
 
         return ((counter >= 3) || provinces.amount==0);
+    }
+
+    int calculateMaxChunk()
+    {
+        float toReturn;
+        toReturn = (((float)playerRegistry[0].handVisual.Count) / 5)-1;
+        Debug.Log(toReturn + " a");
+        if(toReturn>(int)toReturn && toReturn < ((int)toReturn + 1)){
+            toReturn += 1;
+        }
+        return (int)toReturn;
+    }
+
+    private void Update()
+    {
+        if(playerRegistry[0].numBuys == 0 && playerRegistry[0].actionPhase == false)
+        {
+            Debug.Log("A");
+            playerRegistry[0].DrawHand();
+        }
+        int maxChunk = calculateMaxChunk();
+        Debug.Log(maxChunk);
+        if (playerRegistry[0].handVisualChunk == 0)
+        {
+            left.gameObject.SetActive(false);
+            if(playerRegistry[0].handVisualChunk < maxChunk)
+            {
+                right.gameObject.SetActive(true);
+            }
+        }
+        if(playerRegistry[0].handVisualChunk == maxChunk)
+        {
+            right.gameObject.SetActive(false);
+            if (playerRegistry[0].handVisualChunk > 0)
+            {
+                left.gameObject.SetActive(true);
+            }
+        }
+        else if(!(playerRegistry[0].handVisualChunk == 0) && !(playerRegistry[0].handVisualChunk == maxChunk))
+        {
+            left.gameObject.SetActive(true);
+            right.gameObject.SetActive(true);
+        }
     }
 }
