@@ -44,3 +44,6 @@ TagManager:
   - name: Card Image
     uniqueID: 2479108671
     locked: 0
+  - name: Card Closeup
+    uniqueID: 3732120897
+    locked: 0

@@ -31,6 +31,13 @@ public class Player : MonoBehaviour
 
     public int handVisualChunk = 0;
 
+    public string userName;
+
+    public bool Equals(Player player)
+    {
+        return player.userName.Equals(userName);
+    }
+
     public void EndActionPhase()
     {
         actionPhase = false;
@@ -41,8 +48,22 @@ public class Player : MonoBehaviour
         playArea.Clear();
     }
 
+    public string GenerateRandomString(int amount)
+    {
+        string x = "";
+        for(int i = 0; i < amount; i++)
+        {
+            x += (char)Random.Range(0, 100);
+        }
+        return x;
+    }
+
     public void InitializeDeck()
     {
+        if (userName.Equals(""))
+        {
+            userName = GenerateRandomString(5);
+        }
         //add 7 coppers and 3 estates, then shuffle
         for(int i = 0; i < 7; i++)
         {
@@ -70,7 +91,6 @@ public class Player : MonoBehaviour
         }
 
         DrawCard(5);
-
         actionPhase = true;
         numActions = 1;
         numBuys = 1;
@@ -185,6 +205,7 @@ public class Player : MonoBehaviour
 
     public void ShiftHandVisual(int change)
     {
+        Debug.Log("C");
         handVisualChunk += change;
         UpdateHandChunk(handVisualChunk);
     }
@@ -194,7 +215,7 @@ public class Player : MonoBehaviour
     {
         if (tmp != null)
         {
-            tmp.text = $"Actions: {numActions}\nBuys: {numBuys}\nMoney: {numMoney}\nDeck Size: {deck.Count}\nHand Size: {hand.Count}\nDiscard Size: {discard.Count}";
+            tmp.text = $"Actions: {numActions}\nBuys: {numBuys}\nMoney: {numMoney}\nDeck Size: {deck.Count}\nHand Size: {hand.Count}\nDiscard Size: {discard.Count}\nCurrent Player: {GameManager.Instance.playerRegistry[GameManager.Instance.currentPlayer].userName}";
         }
     }
 }

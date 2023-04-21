@@ -23,6 +23,7 @@ public abstract class CardBehavior : MonoBehaviour
     {   
         if (card.isClickable)
         {
+            GameManager.Instance.UpdateGameStatusText($"{player.userName} played {stats.cardName}!");
             /*
              * Do x amount of buys, actions, blah blah then call the custom function
              *
@@ -38,6 +39,7 @@ public abstract class CardBehavior : MonoBehaviour
                     Attack();
                 }
                 player.numActions--;
+
             }
             else if (stats.thisType == CardStats.type.VICTORY)
             {
@@ -60,21 +62,8 @@ public abstract class CardBehavior : MonoBehaviour
         }
         else if (card.isStoreCard)
         {
-            if(player.numMoney >= stats.cost && player.numBuys>0)
-            {
-                player.EndActionPhase();
-                player.discard.Push(stats);
-                UniformCardStack stack = GetComponentInParent<UniformCardStack>();
-                stack.amount--;
-                player.numMoney -= stats.cost;
-                player.numBuys--;
-                player.RecalculateHandGUI();
-                Debug.Log(player.discard.Peek());
-            }
-            else
-            {
-                Debug.LogWarning($"Not enough money to buy card {stats.cardName}. The card costs {stats.cost}, and you only have {player.numMoney}");
-            }
+            GameManager.Instance.cardCloseup.gameObject.SetActive(true);
+            GameManager.Instance.cardCloseup.InitializeCard(GetComponentInParent<UniformCardStack>());
         }
     }
 

@@ -39,6 +39,16 @@ public class GameManager : MonoBehaviour
     UniformCardStack provinces = null;
 
     public Button left, right;
+
+    public TextMeshProUGUI gameStatusText;
+
+    public List<Player> players;
+
+    public int currentPlayer;
+
+    public Button endTurnButton;
+
+    public CardCloseup cardCloseup;
     public static GameManager Instance { get; private set; }
     private void Awake()
     {
@@ -69,6 +79,7 @@ public class GameManager : MonoBehaviour
         StartGame(2);
         left.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(-1); });
         right.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(1); });
+        gameStatusText.text = "";
     }
     public Stack<CardStats> ShuffleCardStack(Stack<CardStats> input)
     {
@@ -100,6 +111,7 @@ public class GameManager : MonoBehaviour
         if (numPlayers < 2)
         {
             Debug.LogWarning($"Cannot start with less than 2 players, attempted to start with {numPlayers} players...");
+            return;
         }
         List<CardStats> toChoose = new List<CardStats>();
         for(int i = 0; i < actionCardRegistry.Count; i++)
@@ -117,6 +129,7 @@ public class GameManager : MonoBehaviour
         {
             Player player = Instantiate(basePlayer).GetComponent<Player>();
             playerRegistry.Add(player);
+            
             player.transform.parent = playerRoot.transform;
             if (i == 0)
             {
@@ -154,6 +167,23 @@ public class GameManager : MonoBehaviour
                 victoryCardStacks[i].amount = 10 * (numPlayers - 1);
             }
         }
+        Debug.Log(playerRegistry[0]+", "+playerRegistry[0].userName);
+        endTurnButton.onClick.AddListener(() => GameManager.Instance.EndTurn(playerRegistry[0]));
+    }
+
+    public void EndTurn(Player player)
+    {
+        Debug.Log("Called");
+        if (player.Equals(playerRegistry[currentPlayer]))
+        {
+
+            playerRegistry[currentPlayer].DrawHand();
+            currentPlayer++;
+        }
+        else
+        {
+            Debug.LogError("Please Investigate!!");
+        }
     }
 
     //return true if the game is over
@@ -189,7 +219,6 @@ public class GameManager : MonoBehaviour
     {
         float toReturn;
         toReturn = (((float)playerRegistry[0].handVisual.Count) / 5)-1;
-        Debug.Log(toReturn + " a");
         if(toReturn>(int)toReturn && toReturn < ((int)toReturn + 1)){
             toReturn += 1;
         }
@@ -198,13 +227,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if(playerRegistry[0].numBuys == 0 && playerRegistry[0].actionPhase == false)
-        {
-            Debug.Log("A");
-            playerRegistry[0].DrawHand();
-        }
         int maxChunk = calculateMaxChunk();
-        Debug.Log(maxChunk);
         if (playerRegistry[0].handVisualChunk == 0)
         {
             left.gameObject.SetActive(false);
@@ -218,7 +241,7 @@ public class GameManager : MonoBehaviour
             right.gameObject.SetActive(false);
             if (playerRegistry[0].handVisualChunk > 0)
             {
-                left.gameObject.SetActive(true);
+                right.gameObject.SetActive(true);
             }
         }
         else if(!(playerRegistry[0].handVisualChunk == 0) && !(playerRegistry[0].handVisualChunk == maxChunk))
@@ -227,4 +250,14 @@ public class GameManager : MonoBehaviour
             right.gameObject.SetActive(true);
         }
     }
+
+    public void UpdateGameStatusText(string textUpdate)
+    {
+        if(gameStatusText.text != "")
+        {
+            gameStatusText.text += "\n";
+        }
+        gameStatusText.text += textUpdate;
+    }
+
 }

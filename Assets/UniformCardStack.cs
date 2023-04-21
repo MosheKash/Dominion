@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class UniformCardStack : MonoBehaviour
@@ -8,7 +9,11 @@ public class UniformCardStack : MonoBehaviour
     public int amount;
     public bool isEmpty;
 
+    public TextMeshProUGUI amountText;
+
     Card cardVisual;
+
+    public GameObject emptyCardStackSprite;
 
     private void Start()
     {
@@ -35,7 +40,8 @@ public class UniformCardStack : MonoBehaviour
         if (amount <= 0)
         {
             isEmpty = true;
-            Destroy(cardVisual.gameObject);
+            emptyCardStackSprite.SetActive(true);
+            cardVisual.gameObject.SetActive(false);
         }
     }
 }
