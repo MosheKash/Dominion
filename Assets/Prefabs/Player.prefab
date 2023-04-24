@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5452765599404395807}
   - component: {fileID: 1364195218080786513}
+  - component: {fileID: -5634052047076061467}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -44,43 +45,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8859ed6a97b2d1b43b26ce956985ff92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: deck
-      Entry: 7
-      Data: 0|System.Collections.Generic.Stack`1[[Card, Assembly-CSharp]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: discard
-      Entry: 7
-      Data: 1|System.Collections.Generic.Stack`1[[Card, Assembly-CSharp]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   numActions: 0
   numBuys: 0
   numMoney: 0
   hand: []
+  handVisual: []
   isActiveTurn: 0
   copper: {fileID: 11400000, guid: 3d6478ebd6b29c34c994513dec9d747a, type: 2}
   estate: {fileID: 11400000, guid: a9fce6a97668fe245b1e2e9502bb86cd, type: 2}
+  deckObj: {fileID: 0}
+  handObj: {fileID: 0}
+  discardObj: {fileID: 0}
+  tmp: {fileID: 0}
+  actionPhase: 0
+  playArea: []
+  handVisualChunk: 0
+  userName: 
+--- !u!114 &-5634052047076061467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4148682318407803548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1

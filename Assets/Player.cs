@@ -2,9 +2,10 @@ using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : NetworkBehaviour
 {
     public int numActions;
     public int numBuys;
@@ -32,6 +33,16 @@ public class Player : MonoBehaviour
     public int handVisualChunk = 0;
 
     public string userName;
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsOwner)
+        {
+            userName = GameManager.Instance.inputArea.GetComponent<TMP_InputField>().text;
+            GameManager.Instance.inputArea.SetActive(false);
+        }
+        base.OnNetworkSpawn();
+    }
 
     public bool Equals(Player player)
     {

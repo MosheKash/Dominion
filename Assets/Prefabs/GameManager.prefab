@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2203806626587806359}
   - component: {fileID: 7510957953476999967}
+  - component: {fileID: 3042258191786296418}
+  - component: {fileID: -601094693653408971}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -44,19 +46,94 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ee882d406f97f94ab993c12f5992536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: cardShopStacks
-      Entry: 6
-      Data: 
-  cardRegistry: []
+  startHost: {fileID: 0}
+  addClient: {fileID: 0}
+  actionCardRegistry: []
+  victoryCardRegistry: []
+  treasureCardRegistry: []
   playerRegistry: []
+  cardShopStacks: []
+  victoryCardStacks: []
+  treasureCardStacks: []
   baseCard: {fileID: 481090667899853971, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
   basePlayer: {fileID: 4148682318407803548, guid: 4939f2e1e3fd29646bf5ffef8067ceea, type: 3}
+  actionCardStackParent: {fileID: 0}
+  victoryCardStackParent: {fileID: 0}
+  treasureCardStackParent: {fileID: 0}
+  mainCamera: {fileID: 0}
+  discardPile: {fileID: 0}
+  tmp: {fileID: 0}
+  left: {fileID: 0}
+  right: {fileID: 0}
+  gameStatusText: {fileID: 0}
+  players: []
+  currentPlayer: 0
+  endTurnButton: {fileID: 0}
+  cardCloseup: {fileID: 0}
+--- !u!114 &3042258191786296418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6831297774363608563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RunInBackground: 1
+  LogLevel: 0
+  NetworkConfig:
+    ProtocolVersion: 0
+    NetworkTransport: {fileID: -601094693653408971}
+    PlayerPrefab: {fileID: 4148682318407803548, guid: 4939f2e1e3fd29646bf5ffef8067ceea, type: 3}
+    NetworkPrefabs:
+    - Override: 0
+      Prefab: {fileID: 4148682318407803548, guid: 4939f2e1e3fd29646bf5ffef8067ceea, type: 3}
+      SourcePrefabToOverride: {fileID: 0}
+      SourceHashToOverride: 0
+      OverridingTargetPrefab: {fileID: 0}
+    TickRate: 30
+    ClientConnectionBufferTimeout: 10
+    ConnectionApproval: 0
+    ConnectionData: 
+    EnableTimeResync: 0
+    TimeResyncInterval: 30
+    EnsureNetworkVariableLengthSafety: 0
+    EnableSceneManagement: 1
+    ForceSamePrefabs: 1
+    RecycleNetworkIds: 1
+    NetworkIdRecycleDelay: 120
+    RpcHashSize: 0
+    LoadSceneTimeOut: 120
+    SpawnTimeout: 1
+    EnableNetworkLogs: 1
+--- !u!114 &-601094693653408971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6831297774363608563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ProtocolType: 0
+  m_MaxPacketQueueSize: 128
+  m_MaxPayloadSize: 6144
+  m_MaxSendQueueSize: 98304
+  m_HeartbeatTimeoutMS: 500
+  m_ConnectTimeoutMS: 1000
+  m_MaxConnectAttempts: 60
+  m_DisconnectTimeoutMS: 30000
+  ConnectionData:
+    Address: 127.0.0.1
+    Port: 7777
+    ServerListenAddress: 
+  DebugSimulator:
+    PacketDelayMS: 0
+    PacketJitterMS: 0
+    PacketDropRate: 0

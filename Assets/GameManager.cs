@@ -3,11 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+
+    public Button startHost, addClient;
+
     public List<CardStats> actionCardRegistry;
 
     public List<CardStats> victoryCardRegistry;
@@ -49,9 +53,49 @@ public class GameManager : MonoBehaviour
     public Button endTurnButton;
 
     public CardCloseup cardCloseup;
+
+    public TextMeshProUGUI debugServerText;
+
+    public GameObject inputArea;
+
+    public bool isHost;
+
+    public void SpawnPlayer()
+    {
+        Debug.Log("A");
+        if (isHost)
+        {
+            NetworkManager.Singleton.StartHost();
+        }
+        else if (!isHost)
+        {
+            NetworkManager.Singleton.StartClient();
+        }
+    }
+
     public static GameManager Instance { get; private set; }
     private void Awake()
     {
+        if (startHost != null)
+        {
+            startHost.onClick.AddListener(() =>
+            {
+                inputArea.SetActive(true);
+                startHost.gameObject.SetActive(false);
+                addClient.gameObject.SetActive(false);
+                isHost = true;
+            });
+        }
+        if (addClient != null)
+        {
+            addClient.onClick.AddListener(() =>
+            {
+                inputArea.SetActive(true);
+                startHost.gameObject.SetActive(false);
+                addClient.gameObject.SetActive(false);
+                isHost = false;
+            });
+        }
         if (Instance != null && Instance != this)
         {
             Destroy(this);
@@ -59,7 +103,7 @@ public class GameManager : MonoBehaviour
         else
         {
             Instance = this;
-        }
+        }/*
         InitializeCardRegistry();
         cardShopStacks = actionCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
         victoryCardStacks = victoryCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
@@ -79,7 +123,7 @@ public class GameManager : MonoBehaviour
         StartGame(2);
         left.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(-1); });
         right.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(1); });
-        gameStatusText.text = "";
+        gameStatusText.text = "";*/
     }
     public Stack<CardStats> ShuffleCardStack(Stack<CardStats> input)
     {
@@ -227,6 +271,12 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (debugServerText != null)
+        {
+            Player[] players = FindObjectsOfType<Player>();
+            debugServerText.text = "Amount of Players: "+players.Length.ToString();
+        }
+        /*
         int maxChunk = calculateMaxChunk();
         if (playerRegistry[0].handVisualChunk == 0)
         {
@@ -249,6 +299,8 @@ public class GameManager : MonoBehaviour
             left.gameObject.SetActive(true);
             right.gameObject.SetActive(true);
         }
+        */
+
     }
 
     public void UpdateGameStatusText(string textUpdate)

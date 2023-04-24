@@ -20,4 +20,6 @@ public class CardStats : ScriptableObject
     public int numMoney;
     public int numVictoryPoints;
     public int moneyValue;
+    
+
 }
