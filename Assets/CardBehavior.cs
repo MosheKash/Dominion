@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public abstract class CardBehavior : MonoBehaviour
@@ -13,7 +14,7 @@ public abstract class CardBehavior : MonoBehaviour
     public void InitBehaviour()
     {
         card = GetComponent<Card>();
-        player = GameManager.Instance.playerRegistry[0];
+        player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>();
         stats = card.stats;
     }
 
@@ -23,10 +24,14 @@ public abstract class CardBehavior : MonoBehaviour
     {   
         if (card.isClickable)
         {
-            GameManager.Instance.UpdateGameStatusText($"{player.userName} played {stats.cardName}!");
+            if (!(GameManager.Instance.currentPlayer.Value == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().playerId))
+            {
+                StartCoroutine(GameManager.Instance.NotYourTurn());
+                return;
+            }
+            GameManager.Instance.UpdateGameStatusTextServerRpc($"{player.userName} played {stats.cardName}!");
             /*
              * Do x amount of buys, actions, blah blah then call the custom function
-             *
              */
             if (stats.thisType == CardStats.type.ACTION && player.actionPhase && player.numActions>0)
             {
@@ -62,8 +67,8 @@ public abstract class CardBehavior : MonoBehaviour
         }
         else if (card.isStoreCard)
         {
-            GameManager.Instance.cardCloseup.gameObject.SetActive(true);
-            GameManager.Instance.cardCloseup.InitializeCard(GetComponentInParent<UniformCardStack>());
+            GameManager.Instance.playerRegistry[NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().playerId].cardCloseup.gameObject.SetActive(true);
+            GameManager.Instance.playerRegistry[NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().playerId].cardCloseup.InitializeCard(GetComponentInParent<UniformCardStack>());
         }
     }
 

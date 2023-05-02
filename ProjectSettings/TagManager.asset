@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - StartButton
+  - EndTurnButton
+  - LeftButton
+  - RightButton
+  - CardCloseup
+  - PlayerInfo
   layers:
   - Default
   - TransparentFX

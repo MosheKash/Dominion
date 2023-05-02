@@ -1,22 +1,24 @@
-using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
-
-    public Button startHost, addClient;
+    public GameObject notYourTurn;
+    public GameObject winner;
 
     public List<CardStats> actionCardRegistry;
 
     public List<CardStats> victoryCardRegistry;
 
     public List<CardStats> treasureCardRegistry;
+
+    public NetworkVariable<bool> gameEnded = new NetworkVariable<bool>(false);
 
     public List<Player> playerRegistry;
 
@@ -28,41 +30,67 @@ public class GameManager : MonoBehaviour
 
     public GameObject baseCard;
 
-    public GameObject basePlayer;
-
     public GameObject actionCardStackParent;
     public GameObject victoryCardStackParent;
     public GameObject treasureCardStackParent;
 
+    public NetworkVariable<bool> gameStarted = new NetworkVariable<bool>(false);
+
+    public NetworkVariable<int> nextPlayerId = new NetworkVariable<int>(0);
+
+    public NetworkVariable<int> counter = new NetworkVariable<int>(0);
+
     public Camera mainCamera;
 
-    public Card discardPile;
+    public bool checker = false;
 
-    public TextMeshProUGUI tmp;
+    public NetworkList<int> playerVictoryPoints = new NetworkList<int>();
 
     UniformCardStack provinces = null;
-
-    public Button left, right;
 
     public TextMeshProUGUI gameStatusText;
 
     public List<Player> players;
 
-    public int currentPlayer;
-
-    public Button endTurnButton;
-
-    public CardCloseup cardCloseup;
+    public NetworkVariable<int> currentPlayer = new NetworkVariable<int>(0);
 
     public TextMeshProUGUI debugServerText;
 
+    public GameObject gameUI;
+
+    public Button startHost, addClient;
     public GameObject inputArea;
-
-    public bool isHost;
-
-    public void SpawnPlayer()
+    [ServerRpc(RequireOwnership =false)]
+    public void IncreasePlayerIntServerRpc()
     {
-        Debug.Log("A");
+        nextPlayerId.Value++;
+        if (CheckGameEnding())
+        {
+            int largestVP = 0;
+            int largestIndex = 0;
+            for(int i = 0; i < playerVictoryPoints.Count; i++)
+            {
+                if(playerVictoryPoints[i] >= largestVP)
+                {
+                    largestVP = playerVictoryPoints[i];
+                    largestIndex = i;
+                }
+            }
+            ShowGameWinnerTextClientRpc("REPLACE ME");
+        }
+    }
+
+    
+
+    [ClientRpc]
+    public void ShowGameWinnerTextClientRpc(string username)
+    {
+        winner.SetActive(true);
+        winner.GetComponent<TextMeshProUGUI>().text = "Winner is: " + username;
+    }
+
+    public void SpawnPlayer(bool isHost)
+    {
         if (isHost)
         {
             NetworkManager.Singleton.StartHost();
@@ -71,11 +99,33 @@ public class GameManager : MonoBehaviour
         {
             NetworkManager.Singleton.StartClient();
         }
+        inputArea.SetActive(false);
+    }
+
+    public IEnumerator NotYourTurn()
+    {
+        notYourTurn.SetActive(true);
+        yield return new WaitForSeconds(2.0f);
+        notYourTurn.SetActive(false);
+    }
+
+    public void InitGame()
+    {
+        gameStarted.Value = true;
     }
 
     public static GameManager Instance { get; private set; }
     private void Awake()
     {
+        
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
         if (startHost != null)
         {
             startHost.onClick.AddListener(() =>
@@ -83,7 +133,10 @@ public class GameManager : MonoBehaviour
                 inputArea.SetActive(true);
                 startHost.gameObject.SetActive(false);
                 addClient.gameObject.SetActive(false);
-                isHost = true;
+                inputArea.GetComponent<TMP_InputField>().onEndEdit.AddListener(delegate
+                {
+                    SpawnPlayer(true);
+                });
             });
         }
         if (addClient != null)
@@ -93,37 +146,13 @@ public class GameManager : MonoBehaviour
                 inputArea.SetActive(true);
                 startHost.gameObject.SetActive(false);
                 addClient.gameObject.SetActive(false);
-                isHost = false;
+                inputArea.GetComponent<TMP_InputField>().onEndEdit.AddListener(delegate
+                {
+
+                    SpawnPlayer(false);
+                });
             });
         }
-        if (Instance != null && Instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
-        }/*
-        InitializeCardRegistry();
-        cardShopStacks = actionCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
-        victoryCardStacks = victoryCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
-        treasureCardStacks = treasureCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
-        for (int i = 0; i < victoryCardStacks.Count; i++)
-        {
-            if (victoryCardStacks[i].card.cardName.Equals("Province"))
-            {
-                provinces = victoryCardStacks[i];
-                break;
-            }
-        }
-        if (provinces == null)
-        {
-            Debug.LogWarning("Unable to find province stack, please investigate...");
-        }
-        StartGame(2);
-        left.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(-1); });
-        right.onClick.AddListener(delegate { playerRegistry[0].ShiftHandVisual(1); });
-        gameStatusText.text = "";*/
     }
     public Stack<CardStats> ShuffleCardStack(Stack<CardStats> input)
     {
@@ -137,7 +166,6 @@ public class GameManager : MonoBehaviour
         }
         return output;
     }
-
     void InitializeCardRegistry()
     {
         actionCardRegistry = Resources.LoadAll<CardStats>("Card Data/Action").ToList();
@@ -150,54 +178,75 @@ public class GameManager : MonoBehaviour
     Player with id 0 is always the player at the machine (review this when doing server stuff) 
 
      */
-    void StartGame(int numPlayers)
+    [ClientRpc]
+    public void StartGameClientRpc ()
     {
-        if (numPlayers < 2)
+        InitializeCardRegistry();
+        cardShopStacks = actionCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
+        victoryCardStacks = victoryCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
+        treasureCardStacks = treasureCardStackParent.GetComponentsInChildren<UniformCardStack>().ToList();
+        gameUI.SetActive(true);
+
+        foreach(UniformCardStack gameObj in cardShopStacks)
         {
-            Debug.LogWarning($"Cannot start with less than 2 players, attempted to start with {numPlayers} players...");
-            return;
+            gameObj.cardVisual.gameObject.SetActive(true);
         }
-        List<CardStats> toChoose = new List<CardStats>();
-        for(int i = 0; i < actionCardRegistry.Count; i++)
+        foreach (UniformCardStack gameObj in victoryCardStacks)
         {
-            toChoose.Add(actionCardRegistry[i]);
+            gameObj.cardVisual.gameObject.SetActive(true);
         }
+        foreach (UniformCardStack gameObj in treasureCardStacks)
+        {
+            gameObj.cardVisual.gameObject.SetActive(true);
+        }
+        for (int i = 0; i < victoryCardStacks.Count; i++)
+        {
+            if (victoryCardStacks[i].card.cardName.Equals("Province"))
+            {
+                provinces = victoryCardStacks[i];
+                break;
+            }
+        }
+        if (provinces == null)
+        {
+            Debug.LogWarning("Unable to find province stack, please investigate...");
+        }
+        List<CardStats> toChoose = CardSelection();
         for(int i = 0; i < cardShopStacks.Count; i++)
         {
-            int randomIndex = Random.Range(0, toChoose.Count);
-            cardShopStacks[i].card = toChoose[randomIndex];
-            toChoose.RemoveAt(randomIndex);
-        }
-        GameObject playerRoot = new GameObject("Players");
-        for(int i = 0; i < numPlayers; i++)
-        {
-            Player player = Instantiate(basePlayer).GetComponent<Player>();
-            playerRegistry.Add(player);
-            
-            player.transform.parent = playerRoot.transform;
-            if (i == 0)
+            if (cardShopStacks[i].amount == 0)
             {
-                playerRegistry[i].deckObj = new GameObject("Deck Object");
-                playerRegistry[i].deckObj.transform.parent = transform;
-
-                playerRegistry[i].handObj = new GameObject("Hand Object");
-                playerRegistry[i].handObj.transform.parent = transform;
-
-                playerRegistry[i].discardObj = new GameObject("Discard Object");
-                playerRegistry[i].discardObj.transform.parent = transform;
-
-                playerRegistry[i].tmp = tmp;
+                Debug.LogWarning($"You have a stack with card type {cardShopStacks[i].card.cardName} that has a size of 0...");
             }
-            playerRegistry[i].InitializeDeck();
+            cardShopStacks[i].cardVisual = cardShopStacks[i].GetComponentInChildren<Card>();
+            cardShopStacks[i].card = toChoose[i];
+            cardShopStacks[i].cardVisual.stats = cardShopStacks[i].card;
+            cardShopStacks[i].cardVisual.isStoreCard = true;
+            if (cardShopStacks[i].cardVisual.behavior != null)
+            {
+                cardShopStacks[i].cardVisual.behavior.InitBehaviour();
+            }
+            cardShopStacks[i].cardVisual.InitializeCard();
+            cardShopStacks[i].cardVisual.transform.position = cardShopStacks[i].transform.position;
+        }
+        for(int i = 0; i < victoryCardStacks.Count; i++)
+        {
+            victoryCardStacks[i].cardVisual.stats = victoryCardStacks[i].card;
+            victoryCardStacks[i].cardVisual.InitializeCard();
+        }
+        for(int i = 0; i < treasureCardStacks.Count; i++)
+        {
+            treasureCardStacks[i].cardVisual.stats = treasureCardStacks[i].card;
+            treasureCardStacks[i].cardVisual.InitializeCard();
         }
         for(int i = 0; i < treasureCardStacks.Count; i++)
         {
             if (treasureCardStacks[i].card.cardName.Equals("Copper"))
             {
-                treasureCardStacks[i].RemoveCard(7 * numPlayers);
+                treasureCardStacks[i].RemoveCard(7 * playerRegistry.Count);
             }
         }
-        if(numPlayers == 2)
+        if(playerRegistry.Count == 2)
         {
             for(int i = 0; i < victoryCardStacks.Count; i++)
             {
@@ -208,26 +257,37 @@ public class GameManager : MonoBehaviour
         {
             if(victoryCardStacks[i].card.thisType == CardStats.type.CURSE)
             {
-                victoryCardStacks[i].amount = 10 * (numPlayers - 1);
+                victoryCardStacks[i].amount = 10 * (playerRegistry.Count - 1);
             }
         }
-        Debug.Log(playerRegistry[0]+", "+playerRegistry[0].userName);
-        endTurnButton.onClick.AddListener(() => GameManager.Instance.EndTurn(playerRegistry[0]));
+        gameStatusText.gameObject.SetActive(true);
+        gameStatusText.text = "";
+        if (IsServer)
+        {
+            gameStarted.Value = true;
+        }
     }
 
-    public void EndTurn(Player player)
+    public List<CardStats> CardSelection()
     {
-        Debug.Log("Called");
-        if (player.Equals(playerRegistry[currentPlayer]))
+        List<CardStats> toReturn = new List<CardStats>();
+        List<CardStats> toChoose = new List<CardStats>();
+        for (int i = 0; i < actionCardRegistry.Count; i++)
         {
-
-            playerRegistry[currentPlayer].DrawHand();
-            currentPlayer++;
+            toChoose.Add(actionCardRegistry[i]);
         }
-        else
+        for(int i = 0; i < cardShopStacks.Count; i++)
         {
-            Debug.LogError("Please Investigate!!");
+            int toRemove = Random.Range(0, toChoose.Count);
+            toReturn.Add(toChoose[toRemove]);
+            toChoose.RemoveAt(toRemove);
         }
+        return toReturn;
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void ShiftTurnIndicatorServerRpc()
+    {
+        currentPlayer.Value++;
     }
 
     //return true if the game is over
@@ -259,57 +319,38 @@ public class GameManager : MonoBehaviour
         return ((counter >= 3) || provinces.amount==0);
     }
 
-    int calculateMaxChunk()
-    {
-        float toReturn;
-        toReturn = (((float)playerRegistry[0].handVisual.Count) / 5)-1;
-        if(toReturn>(int)toReturn && toReturn < ((int)toReturn + 1)){
-            toReturn += 1;
-        }
-        return (int)toReturn;
-    }
-
     private void Update()
     {
+        if(gameStarted.Value && !checker)
+        {
+            Debug.Log("Client");
+            StartGameClientRpc();
+            checker = true;
+        }
         if (debugServerText != null)
         {
             Player[] players = FindObjectsOfType<Player>();
             debugServerText.text = "Amount of Players: "+players.Length.ToString();
         }
-        /*
-        int maxChunk = calculateMaxChunk();
-        if (playerRegistry[0].handVisualChunk == 0)
-        {
-            left.gameObject.SetActive(false);
-            if(playerRegistry[0].handVisualChunk < maxChunk)
-            {
-                right.gameObject.SetActive(true);
-            }
-        }
-        if(playerRegistry[0].handVisualChunk == maxChunk)
-        {
-            right.gameObject.SetActive(false);
-            if (playerRegistry[0].handVisualChunk > 0)
-            {
-                right.gameObject.SetActive(true);
-            }
-        }
-        else if(!(playerRegistry[0].handVisualChunk == 0) && !(playerRegistry[0].handVisualChunk == maxChunk))
-        {
-            left.gameObject.SetActive(true);
-            right.gameObject.SetActive(true);
-        }
-        */
+
+
+        
 
     }
-
-    public void UpdateGameStatusText(string textUpdate)
+    [ClientRpc]
+    public void UpdateGameStatusClientRpc(string textUpdate)
     {
-        if(gameStatusText.text != "")
+        if (gameStatusText.text != "")
         {
             gameStatusText.text += "\n";
         }
         gameStatusText.text += textUpdate;
+    }
+
+    [ServerRpc(RequireOwnership =false)]
+    public void UpdateGameStatusTextServerRpc(string textUpdate)
+    {
+        UpdateGameStatusClientRpc(textUpdate);
     }
 
 }

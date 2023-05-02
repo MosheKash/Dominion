@@ -11,24 +11,9 @@ public class UniformCardStack : MonoBehaviour
 
     public TextMeshProUGUI amountText;
 
-    Card cardVisual;
+    public Card cardVisual;
 
     public GameObject emptyCardStackSprite;
-
-    private void Start()
-    {
-        if (amount == 0)
-        {
-            Debug.LogWarning($"You have a stack with card type {card.cardName} that has a size of 0...");
-        }
-        cardVisual = GetComponentInChildren<Card>();
-        cardVisual.transform.position = transform.position;
-        cardVisual.stats = card;
-        cardVisual.isStoreCard = true;
-        cardVisual.behavior.InitBehaviour();
-        cardVisual.InitializeCard();
-    }
-
     public void RemoveCard(int amountToRemove)
     {
         if (amountToRemove > amount)

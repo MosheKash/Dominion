@@ -50,6 +50,7 @@ MonoBehaviour:
   amount: 10
   isEmpty: 0
   amountText: {fileID: 0}
+  cardVisual: {fileID: 7843182026389824392}
   emptyCardStackSprite: {fileID: 6721783784625893913}
 --- !u!1 &6721783784625893913
 GameObject:
@@ -142,6 +143,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1221019132151583711}
     m_Modifications:
+    - target: {fileID: -3704124316078585550, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 951099334
+      objectReference: {fileID: 0}
     - target: {fileID: 481090667899853965, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -192,7 +197,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 481090667899853971, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
@@ -201,3 +206,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 481090667899853965, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
   m_PrefabInstance: {fileID: 1221019132140554544}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7843182026389824392 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8946816348390959800, guid: 00765565048318d4fb06d267d1c00ca0, type: 3}
+  m_PrefabInstance: {fileID: 1221019132140554544}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b6c043c155fd84488b244f44148ff23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
