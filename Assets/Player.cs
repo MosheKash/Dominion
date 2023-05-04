@@ -61,6 +61,7 @@ public class Player : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        Debug.Log("A");
         if (IsOwner)
         {
             userName = GameManager.Instance.inputArea.GetComponent<TMP_InputField>().text;
@@ -85,14 +86,14 @@ public class Player : NetworkBehaviour
         }
         GameManager.Instance.playerRegistry.Add(this);
         playerId = GameManager.Instance.nextPlayerId.Value;
-        GameManager.Instance.IncreasePlayerIntServerRpc();
+        GameManager.Instance.IncreaseMaxIntServerRpc();
         Debug.Log("Player ID: " + playerId);
         base.OnNetworkSpawn();
     }
     public void EndActionPhase()
     {
         actionPhase = false;
-        for(int i = 0; i < playArea.Count; i++)
+        for (int i = 0; i < playArea.Count; i++)
         {
             discard.Push(playArea[i]);
         }
@@ -101,7 +102,7 @@ public class Player : NetworkBehaviour
     public string GenerateRandomString(int amount)
     {
         string x = "";
-        for(int i = 0; i < amount; i++)
+        for (int i = 0; i < amount; i++)
         {
             x += (char)Random.Range(0, 100);
         }
@@ -111,9 +112,10 @@ public class Player : NetworkBehaviour
     public void InitializeDeckClientRpc()
     {
         if (!IsOwner) return;
-        if(startGame!=null) startGame.gameObject.SetActive(false);
+        if (startGame != null) startGame.gameObject.SetActive(false);
         FindObjectOfType<LobbyCanvasShell>().waitText.SetActive(false);
-        if (IsOwner) {
+        if (IsOwner)
+        {
             deckObj = new GameObject("Deck Object");
             deckObj.transform.parent = transform;
 
@@ -130,11 +132,11 @@ public class Player : NetworkBehaviour
             userName = GenerateRandomString(5);
         }
         //add 7 coppers and 3 estates, then shuffle
-        for(int i = 0; i < 7; i++)
+        for (int i = 0; i < 7; i++)
         {
             deck.Push(copper);
         }
-        for(int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             deck.Push(estate);
         }
@@ -147,20 +149,27 @@ public class Player : NetworkBehaviour
         cardCloseup.gameObject.SetActive(false);
         currentStatsText = GameObject.FindGameObjectWithTag("PlayerInfo").GetComponent<TextMeshProUGUI>();
         endTurnButton.onClick.AddListener(() => EndTurn());
+        Debug.Log($"{left}, {right} ***");
         left.onClick.AddListener(delegate { NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().ShiftHandVisual(-1); });
         right.onClick.AddListener(delegate { NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().ShiftHandVisual(1); });
     }
 
     public void EndTurn()
     {
+        if (!(GameManager.Instance.currentPlayer.Value == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().playerId))
+        {
+            StartCoroutine(GameManager.Instance.NotYourTurn());
+            return;
+        }
         DrawHand();
-        GameManager.Instance.ShiftTurnIndicatorServerRpc();
+        GameManager.Instance.EndTurnServerRpc();
     }
 
     public void DrawHand()
     {
         //Put entire hand into discard pile, then call DrawCard(5)
-        if (hand.Count > 0) {
+        if (hand.Count > 0)
+        {
             for (int i = 0; i < hand.Count; i++)
             {
                 discard.Push(hand[i]);
@@ -191,10 +200,10 @@ public class Player : NetworkBehaviour
         RecalculateHandGUI();
     }
 
-    public void DrawCard(int amountDrawn) 
+    public void DrawCard(int amountDrawn)
     {
         //Debug.Log($"AAAA {NetworkManager.Singleton.LocalClient.PlayerObject.GetType()}, {this.GetType()}, {NetworkManager.Singleton.LocalClient.PlayerObject.Equals(this)}");
-        while (amountDrawn>0 && deck.Count > 0)
+        while (amountDrawn > 0 && deck.Count > 0)
         {
             //Debug.Log($"{NetworkManager.Singleton.LocalClient.PlayerObject}, {this}, {NetworkManager.Singleton.LocalClient.PlayerObject.Equals(this)}");
             if (NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().Equals(this))
@@ -240,9 +249,9 @@ public class Player : NetworkBehaviour
     public void RecalculateHandGUI()
     {
         int counter = 0;
-        for(int i = 0; i < handVisual.Count; i++)
+        for (int i = 0; i < handVisual.Count; i++)
         {
-            handVisual[i].transform.position = new Vector3(-30 + (15 * (i%5)), -20, 50);
+            handVisual[i].transform.position = new Vector3(-30 + (15 * (i % 5)), -20, 50);
             if (counter % 4 == 0)
             {
                 counter = 0;
@@ -253,7 +262,7 @@ public class Player : NetworkBehaviour
             }
         }
 
-        
+
 
         if (discard.Count > 0)
         {
@@ -269,11 +278,11 @@ public class Player : NetworkBehaviour
     }
     void UpdateHandChunk(int chunkID)
     {
-        for(int i = 0; i < handVisual.Count; i++)
+        for (int i = 0; i < handVisual.Count; i++)
         {
             handVisual[i].gameObject.SetActive(false);
         }
-        for(int i = 5*chunkID; i < (5*chunkID)+5; i++)
+        for (int i = 5 * chunkID; i < (5 * chunkID) + 5; i++)
         {
             if (i == handVisual.Count)
             {
@@ -286,7 +295,7 @@ public class Player : NetworkBehaviour
     public void ShiftHandVisual(int change)
     {
         Debug.Log("C");
-        if((handVisualChunk==0 && change<0) || (handVisualChunk==calculateMaxChunk() && change > 0))
+        if ((handVisualChunk == 0 && change < 0) || (handVisualChunk == calculateMaxChunk() && change > 0))
         {
             return;
         }
@@ -306,12 +315,12 @@ public class Player : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(GameManager.Instance.gameStarted.Value && !checker && GameManager.Instance.checker)
+        if (GameManager.Instance.gameStarted.Value && !checker && GameManager.Instance.checker)
         {
             InitializeDeckClientRpc();
             checker = true;
         }
-        if (GameManager.Instance.gameStarted.Value)
+        if (GameManager.Instance.gameStarted.Value && IsOwner)
         {
             if (currentStatsText != null)
             {
@@ -331,7 +340,7 @@ public class Player : NetworkBehaviour
                 right.gameObject.SetActive(false);
                 if (NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().handVisualChunk > 0)
                 {
-                    right.gameObject.SetActive(true);
+                    left.gameObject.SetActive(true);
                 }
             }
             else if (!(NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().handVisualChunk == 0) && !(NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().handVisualChunk == maxChunk))

@@ -44,7 +44,7 @@ public class GameManager : NetworkBehaviour
 
     public bool checker = false;
 
-    public NetworkList<int> playerVictoryPoints = new NetworkList<int>();
+    public NetworkList<int> playerVictoryPoints;
 
     UniformCardStack provinces = null;
 
@@ -60,10 +60,20 @@ public class GameManager : NetworkBehaviour
 
     public Button startHost, addClient;
     public GameObject inputArea;
+    int max = -1;
     [ServerRpc(RequireOwnership =false)]
-    public void IncreasePlayerIntServerRpc()
+    public void EndTurnServerRpc()
     {
-        nextPlayerId.Value++;
+        PulseClientRpc(); // dont know why i need this, but this function doesnt work w/o it...
+        //ShowGameWinnerTextClientRpc("DEBUG");
+        if (currentPlayer.Value < max)
+        {
+            currentPlayer.Value++;
+        }
+        else
+        {
+            currentPlayer.Value = 0;
+        }
         if (CheckGameEnding())
         {
             int largestVP = 0;
@@ -80,7 +90,11 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    
+    [ClientRpc]
+    public void PulseClientRpc()
+    {
+        Debug.Log("Pulse");
+    }
 
     [ClientRpc]
     public void ShowGameWinnerTextClientRpc(string username)
@@ -153,6 +167,7 @@ public class GameManager : NetworkBehaviour
                 });
             });
         }
+        playerVictoryPoints = new NetworkList<int>();
     }
     public Stack<CardStats> ShuffleCardStack(Stack<CardStats> input)
     {
@@ -172,7 +187,11 @@ public class GameManager : NetworkBehaviour
         victoryCardRegistry = Resources.LoadAll<CardStats>("Card Data/Victory").ToList();
         treasureCardRegistry = Resources.LoadAll<CardStats>("Card Data/Treasure").ToList();
     }
-
+    [ServerRpc(RequireOwnership = false)]
+    public void IncreaseMaxIntServerRpc()
+    {
+        nextPlayerId.Value++;
+    }
     /* 
      
     Player with id 0 is always the player at the machine (review this when doing server stuff) 
@@ -262,6 +281,8 @@ public class GameManager : NetworkBehaviour
         }
         gameStatusText.gameObject.SetActive(true);
         gameStatusText.text = "";
+        max = FindObjectsOfType<Player>().Length-1;
+        Debug.Log(max + " ka");
         if (IsServer)
         {
             gameStarted.Value = true;
@@ -283,11 +304,6 @@ public class GameManager : NetworkBehaviour
             toChoose.RemoveAt(toRemove);
         }
         return toReturn;
-    }
-    [ServerRpc(RequireOwnership = false)]
-    public void ShiftTurnIndicatorServerRpc()
-    {
-        currentPlayer.Value++;
     }
 
     //return true if the game is over

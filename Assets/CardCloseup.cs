@@ -12,6 +12,7 @@ public class CardCloseup : MonoBehaviour
     private void Awake()
     {
         card = GetComponentInChildren<Card>();
+        transform.parent.gameObject.SetActive(false);
     }
 
     public void InitializeCard(UniformCardStack stack)
